@@ -1,0 +1,6 @@
+[package]
+name = "web_server"
+authors = ["Arthur Damasceno <damascenoarthur653@gmail.com>"]
+version = "0.1.0"
+license = "MIT"
+edition = "2021"
