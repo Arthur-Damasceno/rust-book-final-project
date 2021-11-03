@@ -1,7 +1,11 @@
 use std::thread;
 
+mod worker;
+
+use worker::Worker;
+
 pub struct ThreadPool {
-    threads: Vec<thread::JoinHandler<()>>,
+    workers: Vec<Worker>,
 }
 
 impl ThreadPool {
@@ -16,8 +20,12 @@ impl ThreadPool {
             panic!("Must have at least one thread");
         }
 
-        let threads = Vec::with_capacity(size);
+        let mut workers = Vec::with_capacity(size);
 
-        Self { threads }
+        for id in ..size {
+            workers.push(Worker::new(id));
+        }
+
+        Self { workers }
     }
 }
