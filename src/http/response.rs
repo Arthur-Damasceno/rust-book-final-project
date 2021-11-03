@@ -48,3 +48,34 @@ impl ToString for Response {
         response_str
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        fs::{remove_file, File},
+        io::Write,
+    };
+
+    use super::*;
+
+    fn create_file_with_contents(path: &str, contents: &str) {
+        let mut file = File::create(path).unwrap();
+        file.write_all(contents.as_bytes()).unwrap();
+    }
+
+    #[test]
+    fn should_read_file_and_return_response() {
+        let filename = "test.html";
+        let contents = "<!DOCTYPE html>\n<html>\n</html>";
+
+        create_file_with_contents(filename, contents);
+        let response = Response::html(filename).unwrap();
+        remove_file(filename).unwrap();
+        let result = response.to_string();
+
+        assert!(result.starts_with("HTTP/1.1 200 OK\r\n"));
+        assert!(result.ends_with(format!("\r\n{}", contents).as_str()));
+        assert!(result.contains("Content-Type: text/html\r\n"));
+        assert!(result.contains(format!("Content-Length: {}\r\n", contents.len()).as_str()));
+    }
+}
