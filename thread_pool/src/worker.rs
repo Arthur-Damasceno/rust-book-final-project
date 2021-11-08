@@ -7,8 +7,8 @@ pub type Job = Box<dyn FnOnce() + Send + 'static>;
 type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
 pub struct Worker {
-    id: usize,
-    thread: thread::JoinHandle<()>,
+    pub id: usize,
+    pub thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
@@ -21,6 +21,9 @@ impl Worker {
             job();
         });
 
-        Self { id, thread }
+        Self {
+            id,
+            thread: Some(thread),
+        }
     }
 }
