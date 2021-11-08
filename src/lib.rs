@@ -10,10 +10,10 @@ pub fn run(host: &str, port: u16) -> Result<(), Error> {
     let pool = ThreadPool::new(4);
 
     for stream in listener.incoming() {
-        let stream = stream.unwrap();
+        let mut stream = stream.unwrap();
 
-        pool.execute(|| {
-            handle_connection(stream);
+        pool.execute(move || {
+            handle_connection(&mut stream);
         })
     }
 
