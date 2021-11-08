@@ -2,11 +2,11 @@ use std::sync::{mpsc, Arc, Mutex};
 
 mod worker;
 
-use worker::{Job, Worker};
+use worker::{Message, Worker};
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: mpsc::Sender<Message>,
 }
 
 impl ThreadPool {
@@ -39,14 +39,22 @@ impl ThreadPool {
     {
         let job = Box::new(f);
 
-        self.sender.send(job).unwrap();
+        self.sender.send(Message::NewJob(job)).unwrap();
     }
 }
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
+        println!("Sending terminate message to all workers.");
+
+        for _ in &self.workers {
+            self.sender.send(Message::Terminate).unwrap();
+        }
+
+        println!("Shutting down all workers.");
+
         for worker in &mut self.workers {
-            println!("Shutting down worker #{}", worker.id);
+            println!("Shutting down worker #{}.", worker.id);
 
             if let Some(thread) = worker.thread.take() {
                 thread.join().unwrap();
