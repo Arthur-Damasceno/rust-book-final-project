@@ -1,17 +1,21 @@
-use std::{io::Error, net::TcpListener};
-
 mod http;
 
-use http::handle_connection;
+use {
+    async_std::{io::Error, net::TcpListener, task::spawn},
+    futures::stream::StreamExt,
+    http::handle_connection,
+};
 
 pub async fn run(host: &str, port: u16) -> Result<(), Error> {
-    let listener = TcpListener::bind(format!("{}:{}", host, port))?;
+    let listener = TcpListener::bind(format!("{}:{}", host, port)).await?;
 
-    for stream in listener.incoming() {
-        let mut stream = stream.unwrap();
-
-        handle_connection(&mut stream).await;
-    }
+    listener
+        .incoming()
+        .for_each_concurrent(None, |stream| async move {
+            let stream = stream.unwrap();
+            spawn(handle_connection(stream));
+        })
+        .await;
 
     Ok(())
 }

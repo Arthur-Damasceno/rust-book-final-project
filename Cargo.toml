@@ -6,4 +6,5 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
+futures = "0.3.17"
 async-std = { version = "1.10.0", features = ["attributes"] }
