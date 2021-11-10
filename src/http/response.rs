@@ -1,7 +1,7 @@
 use {
     super::status::Status,
-    std::collections::HashMap,
     async_std::{fs, io::Error},
+    std::collections::HashMap,
 };
 
 pub struct Response {
@@ -48,5 +48,37 @@ impl ToString for Response {
         }
 
         response_str
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use {
+        super::*,
+        async_std::{
+            fs::{remove_file, File},
+            prelude::*,
+        },
+    };
+
+    async fn create_file_with_contents(path: &str, contents: &str) {
+        let mut file = File::create(path).await.unwrap();
+        file.write_all(contents.as_bytes()).await.unwrap();
+    }
+
+    #[async_std::test]
+    async fn should_read_file_and_return_response() {
+        let filename = "test.html";
+        let contents = "<!DOCTYPE html>\n<html>\n</html>";
+
+        create_file_with_contents(filename, contents).await;
+        let response = Response::html(filename).await.unwrap();
+        remove_file(filename).await.unwrap();
+        let result = response.to_string();
+
+        assert!(result.starts_with("HTTP/1.1 200 OK\r\n"));
+        assert!(result.ends_with(&format!("\r\n{}", contents)));
+        assert!(result.contains("Content-Type: text/html\r\n"));
+        assert!(result.contains(&format!("Content-Length: {}\r\n", contents.len())));
     }
 }
