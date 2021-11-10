@@ -10,7 +10,7 @@ pub async fn run(host: &str, port: u16) -> Result<(), Error> {
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
 
-        handle_connection(&mut stream);
+        handle_connection(&mut stream).await;
     }
 
     Ok(())
