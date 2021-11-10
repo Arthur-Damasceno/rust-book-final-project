@@ -4,7 +4,7 @@ mod http;
 
 use http::handle_connection;
 
-pub fn run(host: &str, port: u16) -> Result<(), Error> {
+pub async fn run(host: &str, port: u16) -> Result<(), Error> {
     let listener = TcpListener::bind(format!("{}:{}", host, port))?;
 
     for stream in listener.incoming() {
