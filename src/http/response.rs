@@ -1,6 +1,8 @@
-use std::{collections::HashMap, fs, io::Error};
-
-use super::status::Status;
+use {
+    super::status::Status,
+    std::collections::HashMap,
+    async_std::{fs, io::Error},
+};
 
 pub struct Response {
     status: Status,
@@ -9,8 +11,8 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn html(filename: &str) -> Result<Self, Error> {
-        let contents = fs::read_to_string(filename)?;
+    pub async fn html(filename: &str) -> Result<Self, Error> {
+        let contents = fs::read_to_string(filename).await?;
 
         let mut headers = HashMap::new();
         headers.insert("Content-Length".to_string(), contents.len().to_string());
@@ -46,36 +48,5 @@ impl ToString for Response {
         }
 
         response_str
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::{
-        fs::{remove_file, File},
-        io::Write,
-    };
-
-    use super::*;
-
-    fn create_file_with_contents(path: &str, contents: &str) {
-        let mut file = File::create(path).unwrap();
-        file.write_all(contents.as_bytes()).unwrap();
-    }
-
-    #[test]
-    fn should_read_file_and_return_response() {
-        let filename = "test.html";
-        let contents = "<!DOCTYPE html>\n<html>\n</html>";
-
-        create_file_with_contents(filename, contents);
-        let response = Response::html(filename).unwrap();
-        remove_file(filename).unwrap();
-        let result = response.to_string();
-
-        assert!(result.starts_with("HTTP/1.1 200 OK\r\n"));
-        assert!(result.ends_with(format!("\r\n{}", contents).as_str()));
-        assert!(result.contains("Content-Type: text/html\r\n"));
-        assert!(result.contains(format!("Content-Length: {}\r\n", contents.len()).as_str()));
     }
 }

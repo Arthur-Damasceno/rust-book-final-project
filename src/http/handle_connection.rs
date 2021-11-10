@@ -16,14 +16,14 @@ pub async fn handle_connection(mut stream: impl Read + Write + Unpin) {
     let sleep = b"GET /sleep HTTP/1.1\r\n";
 
     let response = if buffer.starts_with(get) {
-        Response::html("public/hello.html").unwrap()
+        Response::html("public/hello.html").await.unwrap()
     } else if buffer.starts_with(sleep) {
-        let mut response = Response::html("public/404.html").unwrap();
+        let mut response = Response::html("public/404.html").await.unwrap();
         response.status(Status::NotFound);
         task::sleep(Duration::from_secs(5)).await;
         response
     } else {
-        let mut response = Response::html("public/404.html").unwrap();
+        let mut response = Response::html("public/404.html").await.unwrap();
         response.status(Status::NotFound);
         response
     };
