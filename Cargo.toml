@@ -6,4 +6,4 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
-thread_pool = { path = "./thread_pool" }
+async-std = { version = "1.10.0", features = ["attributes"] }
